@@ -94,8 +94,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	openPorts := make(chan int, len(ports))   // Channel to collect open ports
-	portsToScan := make(chan int, len(ports)) // Channel to distribute ports to workers
+	openPorts := make(chan int, 100)   // Channel to collect open ports
+	portsToScan := make(chan int, 100) // Channel to distribute ports to workers
 	var wg sync.WaitGroup
 
 	timeout := time.Duration(timeoutMs) * time.Millisecond
