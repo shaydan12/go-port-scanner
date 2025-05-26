@@ -61,7 +61,7 @@ func ScanPort(host string, portsToScan <-chan int, openPorts chan<- int, wg *syn
 	defer wg.Done()
 
 	for port := range portsToScan {
-		address := fmt.Sprintf("%s:%d", host, port)
+		address := net.JoinHostPort(host, strconv.Itoa(port))
 		conn, err := net.DialTimeout("tcp", address, timeout)
 		if err == nil {
 			openPorts <- port
@@ -79,7 +79,7 @@ func main() {
 
 	flag.StringVar(&host, "host", "", "Target host to scan")
 	flag.StringVar(&portArg, "p", "", "Ports to scan (e.g. 80,443 or 20-100). Defaults to all ports.")
-	flag.IntVar(&timeoutMs, "timeout", 500, "Timeout in milliseconds for each port scan")
+	flag.IntVar(&timeoutMs, "timeout", 250, "Timeout in milliseconds for each port scan")
 	flag.Parse()
 
 	if host == "" {
