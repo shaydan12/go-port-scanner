@@ -11,7 +11,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/schollz/progressbar/v3"
 )
+
+var bar *progressbar.ProgressBar
 
 // Terminal color codes used for output
 const (
@@ -69,10 +73,13 @@ func ScanPort(host string, portsToScan <-chan int, openPorts chan<- int, wg *syn
 		if conn != nil { //Safely close connection only if successfully created
 			conn.Close()
 		}
+		bar.Add(1)
 	}
+
 }
 
 func main() {
+
 	var host string
 	var portArg string
 	var timeoutMs int
@@ -96,10 +103,14 @@ func main() {
 
 	openPorts := make(chan int, len(ports))   // Channel to collect open ports
 	portsToScan := make(chan int, len(ports)) // Channel to distribute ports to workers
+
+	bar = progressbar.New(len(ports))
 	var wg sync.WaitGroup
 
 	timeout := time.Duration(timeoutMs) * time.Millisecond
 	numWorkers := min(len(ports), runtime.NumCPU()*20)
+
+	start := time.Now()
 
 	for i := 0; i < numWorkers; i++ { // Start worker goroutines
 		wg.Add(1)
@@ -121,9 +132,18 @@ func main() {
 	}
 	sort.Ints(foundPorts)
 
+	fmt.Printf("\n\n")
 	for _, port := range foundPorts {
 		fmt.Printf("%sPort %d is open%s\n", Green, port, Reset)
 	}
 
-	fmt.Printf("\nScan complete. %d open ports found.\n", len(foundPorts))
+	elapsed := time.Since(start)
+
+	if len(foundPorts) == 0 {
+		fmt.Printf("\nNo open ports found.\nTime elapsed: %s ", elapsed)
+	} else {
+		fmt.Printf("\nScan completed.\n%d open ports found.\nTime elapsed: %s\n", len(foundPorts), elapsed)
+
+	}
+
 }
