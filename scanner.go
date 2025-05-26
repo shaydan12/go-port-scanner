@@ -99,7 +99,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	timeout := time.Duration(timeoutMs) * time.Millisecond
-	numWorkers := 2 * runtime.NumCPU()
+	numWorkers := min(len(ports), runtime.NumCPU()*20)
 
 	for i := 0; i < numWorkers; i++ { // Start worker goroutines
 		wg.Add(1)
