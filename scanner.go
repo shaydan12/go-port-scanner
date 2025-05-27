@@ -94,6 +94,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if timeoutMs <= 0 {
+		fmt.Println("Timeout must be a positive integer.")
+		os.Exit(1)
+	}
+
 	// Parse port argument
 	ports, err := parsePorts(portArg)
 	if err != nil {
@@ -112,6 +117,8 @@ func main() {
 
 	start := time.Now()
 
+	fmt.Println(" [ Scanning ports... ]")
+
 	for i := 0; i < numWorkers; i++ { // Start worker goroutines
 		wg.Add(1)
 		go ScanPort(host, portsToScan, openPorts, &wg, timeout)
@@ -126,6 +133,7 @@ func main() {
 	wg.Wait()
 	close(openPorts) // Close 'openPorts' chan when scan is finished.
 
+	bar.Clear()
 	var foundPorts []int
 	for port := range openPorts {
 		foundPorts = append(foundPorts, port)
